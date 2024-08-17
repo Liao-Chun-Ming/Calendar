@@ -14,15 +14,16 @@ const calendar = reactive({
   day: 0
 })
 
+const isOpen = ref(false)
 const selectedDate = ref('')
 const eventContent = ref('')
 const eventsStore = useTodoStore()
 const addEvent = (date, eventContent) => {
   eventsStore.addEvent(date, eventContent)
+  isOpen.value = !isOpen.value
 }
 const events = computed(() => eventsStore.events)
 
-const isOpen = ref(false)
 const setToday = () => {
   const date = new Date()
   today.year = calendar.year = date.getFullYear()
@@ -135,17 +136,18 @@ const calendarMonth = computed(() => {
     </div>
     <div class="flex justify-center p-5">
       <button @click="isOpen = !isOpen" class="btn btn-neutral text-white">Add Event</button>
+      <div v-if="isOpen" class="w-full h-full fixed inset-0 bg-black bg-opacity-50"></div>
       <div
         v-if="isOpen"
-        class="absolute left-1/2 top-[30%] -translate-x-1/2 w-96 h-96 bg-white flex flex-col items-center justify-between gap-5 shadow-lg rounded-lg py-5"
+        class="absolute left-1/2 top-[30%] -translate-x-1/2 w-96 bg-white flex flex-col items-center justify-between gap-5 shadow-lg rounded-lg py-5"
       >
-        <div class="w-4/5 flex flex-col gap-5">
+        <div class="w-4/5 flex flex-col gap-5 z-10">
           <div class="flex justify-between items-center">
             <div class="w-4"></div>
-            <p class="self-center">Add New Event</p>
+            <h3 class="text-xl font-semibold">Add New Event</h3>
             <button
               @click="isOpen = !isOpen"
-              class="w-6 h-6 rounded-full hover:bg-[#EFEFEF] active:bg-[#b3b3b3]"
+              class="w-7 h-7 rounded-full hover:bg-[#EFEFEF] active:bg-[#d5d4d4]"
             >
               <i class="fa-solid fa-x"></i>
             </button>

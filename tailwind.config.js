@@ -23,7 +23,8 @@ export default {
     },
     extend: {
       fontFamily: {
-        Inter: ['Inter']
+        Inter: ['Inter'],
+        BugeeTint: ['Bungee Tint']
       }
     }
   },
