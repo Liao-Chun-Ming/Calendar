@@ -1,11 +1,11 @@
 <script setup>
 import Navbar from '@/components/NavBar.vue'
-import MainArea from '@/components/MainArea.vue'
+import CalendarArea from '@/components/CalendarArea.vue'
 import FooterArea from '@/components/FooterArea.vue'
 </script>
 
 <template>
   <Navbar />
-  <MainArea />
+  <CalendarArea />
   <FooterArea />
 </template>
