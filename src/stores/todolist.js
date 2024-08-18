@@ -12,6 +12,12 @@ export const useTodoStore = defineStore('todoStore', {
       this.events[date].push(eventContent)
       this.saveEvents()
     },
+    removeEvent(date, eventIndex) {
+      if (this.events[date]) {
+        this.events[date].splice(eventIndex, 1)
+        this.saveEvents()
+      }
+    },
     saveEvents() {
       localStorage.setItem('calendarEvents', JSON.stringify(this.events))
     }

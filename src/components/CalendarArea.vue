@@ -1,6 +1,7 @@
 <script setup>
 import { ref, reactive, onMounted, computed } from 'vue'
 import { useTodoStore } from '@/stores/todolist.js'
+import Swal from 'sweetalert2'
 const today = reactive({
   year: 0,
   month: 0,
@@ -21,6 +22,26 @@ const eventsStore = useTodoStore()
 const addEvent = (date, eventContent) => {
   eventsStore.addEvent(date, eventContent)
   isOpen.value = !isOpen.value
+}
+const removeEvent = (date, eventIndex) => {
+  Swal.fire({
+    title: 'Are you sure?',
+    text: "You won't be able to revert this!",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: '#d33',
+    confirmButtonText: 'Yes, delete it!'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      eventsStore.removeEvent(date, eventIndex)
+      Swal.fire({
+        title: 'Deleted!',
+        text: 'Your event has been deleted.',
+        icon: 'success'
+      })
+    }
+  })
 }
 const events = computed(() => eventsStore.events)
 
@@ -126,6 +147,12 @@ const calendarMonth = computed(() => {
                 `${calendarMonth[(i - 1) * 7 + j - 1].year}-${String(calendarMonth[(i - 1) * 7 + j - 1].month + 1).padStart(2, '0')}-${String(calendarMonth[(i - 1) * 7 + j - 1].date).padStart(2, '0')}`
               ]"
               :key="index"
+              @click="
+                removeEvent(
+                  `${calendarMonth[(i - 1) * 7 + j - 1].year}-${String(calendarMonth[(i - 1) * 7 + j - 1].month + 1).padStart(2, '0')}-${String(calendarMonth[(i - 1) * 7 + j - 1].date).padStart(2, '0')}`,
+                  index
+                )
+              "
               class="bg-black text-white rounded-md px-2 py-1"
             >
               {{ event }}
