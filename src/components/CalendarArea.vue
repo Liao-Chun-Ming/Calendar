@@ -39,13 +39,14 @@ const editEvent = (date, eventIndex) => {
     console.log(result)
     if (result.isConfirmed) {
       newContent.value = prompt('Please enter the new event:')
+      let newText = newContent.value
       if (newContent.value) {
         Swal.fire({
           title: 'Edited!',
           text: 'Your event has been edited.',
           icon: 'success'
         })
-        eventsStore.updateEvent(date, eventIndex, newContent)
+        eventsStore.updateEvent(date, eventIndex, newText)
       } else {
         Swal.fire({
           title: 'Error!',
