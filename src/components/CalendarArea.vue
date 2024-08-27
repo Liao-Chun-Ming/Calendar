@@ -18,31 +18,52 @@ const calendar = reactive({
 const isOpen = ref(false)
 const selectedDate = ref('')
 const eventContent = ref('')
+const newContent = ref('')
 const eventsStore = useTodoStore()
 const addEvent = (date, eventContent) => {
   eventsStore.addEvent(date, eventContent)
   isOpen.value = !isOpen.value
 }
-const removeEvent = (date, eventIndex) => {
+const editEvent = (date, eventIndex) => {
   Swal.fire({
     title: 'Are you sure?',
     text: "You won't be able to revert this!",
-    icon: 'warning',
+    icon: 'question',
     showCancelButton: true,
+    showDenyButton: true,
     confirmButtonColor: '#3085d6',
-    cancelButtonColor: '#d33',
-    confirmButtonText: 'Yes, delete it!'
+    cancelButtonColor: '#6b6b6b',
+    confirmButtonText: 'Editing',
+    denyButtonText: 'Delete'
   }).then((result) => {
+    console.log(result)
     if (result.isConfirmed) {
-      eventsStore.removeEvent(date, eventIndex)
+      newContent.value = prompt('Please enter the new event:')
+      if (newContent.value) {
+        Swal.fire({
+          title: 'Edited!',
+          text: 'Your event has been edited.',
+          icon: 'success'
+        })
+        eventsStore.updateEvent(date, eventIndex, newContent)
+      } else {
+        Swal.fire({
+          title: 'Error!',
+          text: 'This must not be blank.',
+          icon: 'error'
+        })
+      }
+    } else if (result.isDenied) {
       Swal.fire({
         title: 'Deleted!',
         text: 'Your event has been deleted.',
         icon: 'success'
       })
+      eventsStore.removeEvent(date, eventIndex)
     }
   })
 }
+
 const events = computed(() => eventsStore.events)
 
 const setToday = () => {
@@ -97,7 +118,7 @@ const calendarMonth = computed(() => {
 })
 </script>
 <template>
-  <div>
+  <div class="min-h-screen">
     <h2 class="text-3xl text-center mb-5">
       {{ calendar.year }}-{{ calendar.month + 1 }}-{{ calendar.date }}
     </h2>
@@ -148,7 +169,7 @@ const calendarMonth = computed(() => {
               ]"
               :key="index"
               @click="
-                removeEvent(
+                editEvent(
                   `${calendarMonth[(i - 1) * 7 + j - 1].year}-${String(calendarMonth[(i - 1) * 7 + j - 1].month + 1).padStart(2, '0')}-${String(calendarMonth[(i - 1) * 7 + j - 1].date).padStart(2, '0')}`,
                   index
                 )
@@ -162,7 +183,9 @@ const calendarMonth = computed(() => {
       </div>
     </div>
     <div class="flex justify-center p-5">
-      <button @click="isOpen = !isOpen" class="btn btn-neutral text-white">Add Event</button>
+      <button @click="isOpen = !isOpen" class="btn btn-neutral bg-black text-white">
+        Add Event
+      </button>
       <div v-if="isOpen" class="w-full h-full fixed inset-0 bg-black bg-opacity-50"></div>
       <div
         v-if="isOpen"
@@ -193,7 +216,10 @@ const calendarMonth = computed(() => {
             ></textarea>
           </div>
         </div>
-        <button @click="addEvent(selectedDate, eventContent)" class="btn btn-neutral text-white">
+        <button
+          @click="addEvent(selectedDate, eventContent)"
+          class="btn btn-neutral bg-black text-white"
+        >
           Add
         </button>
       </div>

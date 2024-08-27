@@ -12,6 +12,12 @@ export const useTodoStore = defineStore('todoStore', {
       this.events[date].push(eventContent)
       this.saveEvents()
     },
+    updateEvent(date, eventIndex, newContent) {
+      if (this.events[date] && this.events[date][eventIndex]) {
+        this.events[date][eventIndex] = newContent
+        this.saveEvents()
+      }
+    },
     removeEvent(date, eventIndex) {
       if (this.events[date]) {
         this.events[date].splice(eventIndex, 1)
