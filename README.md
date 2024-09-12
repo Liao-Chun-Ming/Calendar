@@ -33,6 +33,13 @@ npm run build
 ```sh
 npm run lint
 ```
+
+## Tool
+- Vue + Vite as a development framework.
+- TailWind:The CSS framework to use it.
+- LottieFile: The Great designs come alive with motion!
+- Sweetalert2:use for notification.
+
 #### When you enter this web you can the scene blow.
 ![截圖 2024-09-12 16 25 54](https://github.com/user-attachments/assets/7649a404-60c8-4813-8304-dc2679185406)
 
