@@ -20,7 +20,7 @@ onMounted(() => {
 <template>
   <nav>
     <div class="bg-white flex items-center justify-center">
-      <p ref="iconRef" class="w-20 bg-transparent"></p>
+      <div ref="iconRef" class="w-20 bg-transparent"></div>
       <h1 class="text-5xl font-BugeeTint">Calendar</h1>
     </div>
   </nav>

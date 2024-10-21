@@ -1,7 +1,8 @@
 <script setup>
 import { ref, reactive, onMounted, computed } from 'vue'
-import { useTodoStore } from '@/stores/todolist.js'
-import Swal from 'sweetalert2'
+import { useEventStore } from '@/stores/index.js'
+import EventModal from '@/components/EventModal.vue'
+
 const today = reactive({
   year: 0,
   month: 0,
@@ -15,57 +16,8 @@ const calendar = reactive({
   day: 0
 })
 
-const isOpen = ref(false)
-const selectedDate = ref('')
-const eventContent = ref('')
-const newContent = ref('')
-const eventsStore = useTodoStore()
-const addEvent = (date, eventContent) => {
-  eventsStore.addEvent(date, eventContent)
-  isOpen.value = !isOpen.value
-}
-const editEvent = (date, eventIndex) => {
-  Swal.fire({
-    title: 'Are you sure?',
-    text: "You won't be able to revert this!",
-    icon: 'question',
-    showCancelButton: true,
-    showDenyButton: true,
-    confirmButtonColor: '#3085d6',
-    cancelButtonColor: '#6b6b6b',
-    confirmButtonText: 'Editing',
-    denyButtonText: 'Delete'
-  }).then((result) => {
-    console.log(result)
-    if (result.isConfirmed) {
-      newContent.value = prompt('Please enter the new event:')
-      let newText = newContent.value
-      if (newContent.value) {
-        Swal.fire({
-          title: 'Edited!',
-          text: 'Your event has been edited.',
-          icon: 'success'
-        })
-        eventsStore.updateEvent(date, eventIndex, newText)
-      } else {
-        Swal.fire({
-          title: 'Error!',
-          text: 'This must not be blank.',
-          icon: 'error'
-        })
-      }
-    } else if (result.isDenied) {
-      Swal.fire({
-        title: 'Deleted!',
-        text: 'Your event has been deleted.',
-        icon: 'success'
-      })
-      eventsStore.removeEvent(date, eventIndex)
-    }
-  })
-}
-
-const events = computed(() => eventsStore.events)
+const currentEvent = ref(null)
+const eventsStore = useEventStore()
 
 const setToday = () => {
   const date = new Date()
@@ -83,9 +35,27 @@ const adjustMonth = (fix) => {
   calendar.month = ((month % 12) + 12) % 12
 }
 
-onMounted(() => {
-  setToday()
-})
+const toggleModal = () => {
+  eventsStore.toggleEvent()
+}
+
+const toggleEditEvent = (date, index) => {
+  eventsStore.toggleEditEvent()
+  toggleModal()
+  getCurrentEvent(date)
+
+  currentEvent.value = {
+    index: index,
+    eventDate: currentEventArray.value[0]?.eventDate || '',
+    eventContent: currentEventArray.value[0]?.eventContentList[index]?.content || ''
+  }
+}
+
+const getCurrentEvent = (date) => {
+  eventsStore.setCurrentEvent(date)
+}
+
+const filteredDate = (date) => events.value.filter((event) => event.eventDate === date)
 
 const calendarFirstDay = computed(() => {
   const mDate = new Date(calendar.year, calendar.month, 1)
@@ -116,6 +86,12 @@ const calendarMonth = computed(() => {
     })
   }
   return data
+})
+
+const events = computed(() => eventsStore.eventData)
+const currentEventArray = computed(() => eventsStore.currentEventArray)
+onMounted(() => {
+  setToday()
 })
 </script>
 <template>
@@ -158,73 +134,32 @@ const calendarMonth = computed(() => {
         >
           <div
             v-if="
-              events[
+              filteredDate(
                 `${calendarMonth[(i - 1) * 7 + j - 1].year}-${String(calendarMonth[(i - 1) * 7 + j - 1].month + 1).padStart(2, '0')}-${String(calendarMonth[(i - 1) * 7 + j - 1].date).padStart(2, '0')}`
-              ]
+              )
             "
             class="flex flex-col gap-1 p-2 mt-[25px]"
           >
             <p
-              v-for="(event, index) in events[
+              v-for="(event, index) in filteredDate(
                 `${calendarMonth[(i - 1) * 7 + j - 1].year}-${String(calendarMonth[(i - 1) * 7 + j - 1].month + 1).padStart(2, '0')}-${String(calendarMonth[(i - 1) * 7 + j - 1].date).padStart(2, '0')}`
-              ]"
+              )[0]?.eventContentList"
               :key="index"
               @click="
-                editEvent(
+                toggleEditEvent(
                   `${calendarMonth[(i - 1) * 7 + j - 1].year}-${String(calendarMonth[(i - 1) * 7 + j - 1].month + 1).padStart(2, '0')}-${String(calendarMonth[(i - 1) * 7 + j - 1].date).padStart(2, '0')}`,
                   index
                 )
               "
-              class="bg-black text-white rounded-md px-2 py-1"
+              class="text-black text-xs border border-orange-300 rounded-sm p-1 cursor-pointer"
             >
-              {{ event }}
+              {{ event.content }}
             </p>
           </div>
         </div>
       </div>
     </div>
-    <div class="flex justify-center p-5">
-      <button @click="isOpen = !isOpen" class="btn btn-neutral bg-black text-white">
-        Add Event
-      </button>
-      <div v-if="isOpen" class="w-full h-full fixed inset-0 bg-black bg-opacity-50"></div>
-      <div
-        v-if="isOpen"
-        class="absolute left-1/2 top-[30%] -translate-x-1/2 w-96 bg-white flex flex-col items-center justify-between gap-5 shadow-lg rounded-lg py-5"
-      >
-        <div class="w-4/5 flex flex-col gap-5 z-10">
-          <div class="flex justify-between items-center">
-            <div class="w-4"></div>
-            <h3 class="text-xl font-semibold">Add New Event</h3>
-            <button
-              @click="isOpen = !isOpen"
-              class="w-7 h-7 rounded-full hover:bg-[#EFEFEF] active:bg-[#d5d4d4]"
-            >
-              <i class="fa-solid fa-x"></i>
-            </button>
-          </div>
-          <div>
-            <label for="formdate">Date:</label>
-            <input v-model="selectedDate" type="date" id="formdate" class="w-full rounded-lg" />
-          </div>
-          <div class="flex flex-col justify-center items-center">
-            <label for="textcontent" class="self-start">Events:</label>
-            <textarea
-              v-model="eventContent"
-              name="todo"
-              id="textcontent"
-              class="w-full h-32 rounded-lg"
-            ></textarea>
-          </div>
-        </div>
-        <button
-          @click="addEvent(selectedDate, eventContent)"
-          class="btn btn-neutral bg-black text-white"
-        >
-          Add
-        </button>
-      </div>
-    </div>
+    <EventModal :currentevent="currentEvent" />
   </div>
 </template>
 <style scoped>
