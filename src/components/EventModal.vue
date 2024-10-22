@@ -18,68 +18,68 @@ const eventContent = ref(null)
 const loading = ref(null)
 const eventsStore = useEventStore()
 
-const closeEvent = () => {
-  eventsStore.toggleEvent()
-  if (editEvent.value) {
-    eventsStore.toggleEditEvent()
-    selectedDate.value = null
-    eventContent.value = null
-  }
-}
 const toggleModal = () => {
   eventsStore.toggleEvent()
 }
+const closeEvent = () => {
+  toggleModal()
+  if (editEvent.value) {
+    eventsStore.toggleEditEvent()
+  }
+  selectedDate.value = null
+  eventContent.value = null
+}
 
-const addEvent = async () => {
+const saveEvent = async () => {
+  if (!selectedDate.value || !eventContent.value) {
+    alert('Please ensure you filled out')
+    return
+  }
+
   loading.value = true
-  const dataBase = doc(collection(db, 'events'), selectedDate.value)
-  const docSnap = await getDoc(dataBase)
-  const data = {
+  const eventDate = selectedDate.value
+  const eventData = {
     id: uid(),
     content: eventContent.value
   }
 
+  const dataBase = doc(collection(db, 'events'), eventDate)
+  const docSnap = await getDoc(dataBase)
+
+  if (editEvent.value && props?.currentevent.currentDate !== eventDate) {
+    await eventsStore.deleteEvent(props.currentevent.currentDate, props.currentevent.currentIndex)
+  }
+
   if (docSnap.exists()) {
     const existingData = docSnap.data()
-    existingData.eventContentList.push(data)
+    if (editEvent.value && props?.currentevent.currentDate === eventDate) {
+      existingData.eventContentList[props.currentevent.currentIndex].content = eventData.content
+    } else {
+      existingData.eventContentList.push(eventData)
+    }
     await updateDoc(dataBase, existingData)
   } else {
     await setDoc(dataBase, {
       eventId: uid(6),
       eventDate: selectedDate.value,
-      eventContentList: [data]
+      eventContentList: [eventData]
     })
   }
-  loading.value = false
-  selectedDate.value = eventContent.value = null
-  toggleModal()
-  await eventsStore.getEvents()
-}
-
-const updateEvent = async () => {
-  loading.value = true
-  const dataBase = doc(collection(db, 'events'), selectedDate.value)
-  const docSnap = await getDoc(dataBase)
-  const existingData = docSnap.data()
-  existingData.eventContentList[props.currentevent.index].content = eventContent.value
-  await updateDoc(dataBase, existingData)
   loading.value = false
   await eventsStore.getEvents()
   closeEvent()
 }
 
 const deleteEvent = async (date, index) => {
+  loading.value = true
   await eventsStore.deleteEvent(date, index)
-  eventsStore.getEvents()
+  await eventsStore.getEvents()
+  loading.value = false
   closeEvent()
 }
 
 const submitForm = () => {
-  if (editEvent.value) {
-    updateEvent()
-    return
-  }
-  addEvent()
+  saveEvent()
 }
 
 const eventModal = computed(() => eventsStore.eventModal)
@@ -89,8 +89,8 @@ watch(
   [() => props.currentevent, editEvent],
   ([newCurrentEvent, newEditEvent]) => {
     if (newEditEvent && newCurrentEvent) {
-      selectedDate.value = newCurrentEvent.eventDate || null
-      eventContent.value = newCurrentEvent.eventContent || null
+      selectedDate.value = newCurrentEvent.currentDate || null
+      eventContent.value = newCurrentEvent.currentContent || null
     } else {
       selectedDate.value = null
       eventContent.value = null
@@ -102,14 +102,13 @@ watch(
 
 <template>
   <div class="flex justify-center p-5">
-    <button @click="toggleModal" class="btn btn-neutral bg-black text-white">New Event</button>
     <div v-if="eventModal" class="w-full h-full fixed inset-0 bg-black bg-opacity-50"></div>
     <div
       v-if="eventModal"
-      class="absolute left-1/2 top-[30%] -translate-x-1/2 w-96 bg-white flex flex-col items-center justify-between gap-5 shadow-lg rounded-lg py-5"
+      class="absolute left-1/2 top-[30%] -translate-x-1/2 min-w-96 bg-white flex flex-col items-center justify-between gap-5 shadow-lg rounded-lg py-5"
     >
-      <div class="relativew-4/5 flex flex-col gap-5 z-10">
-        <Loading v-show="loading" />
+      <Loading v-show="loading" />
+      <div class="w-4/5 flex flex-col gap-5 z-10">
         <div class="flex justify-between items-center">
           <div class="w-4"></div>
           <h3 v-if="!editEvent" class="text-xl font-semibold">Add New Event</h3>

@@ -1,7 +1,6 @@
 <script setup>
 import { ref, reactive, onMounted, computed } from 'vue'
 import { useEventStore } from '@/stores/index.js'
-import EventModal from '@/components/EventModal.vue'
 
 const today = reactive({
   year: 0,
@@ -159,7 +158,9 @@ onMounted(() => {
         </div>
       </div>
     </div>
-    <EventModal :currentevent="currentEvent" />
+    <div class="flex justify-center p-5">
+      <button @click="toggleModal" class="btn btn-neutral bg-black text-white">New Event</button>
+    </div>
   </div>
 </template>
 <style scoped>
