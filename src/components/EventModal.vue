@@ -82,7 +82,6 @@ const submitForm = () => {
   saveEvent()
 }
 
-const eventModal = computed(() => eventsStore.eventModal)
 const editEvent = computed(() => eventsStore.editEvent)
 
 watch(
@@ -102,10 +101,9 @@ watch(
 
 <template>
   <div class="flex justify-center p-5">
-    <div v-if="eventModal" class="w-full h-full fixed inset-0 bg-black bg-opacity-50"></div>
+    <div class="w-full h-full fixed inset-0 bg-black bg-opacity-50"></div>
     <div
-      v-if="eventModal"
-      class="absolute left-1/2 top-[30%] -translate-x-1/2 min-w-96 bg-white flex flex-col items-center justify-between gap-5 shadow-lg rounded-lg py-5"
+      class="absolute left-1/2 top-[30%] -translate-x-1/2 min-w-[336px] sm:min-w-96 bg-white flex flex-col items-center justify-between gap-5 shadow-lg rounded-lg py-5"
     >
       <Loading v-show="loading" />
       <div class="w-4/5 flex flex-col gap-5 z-10">

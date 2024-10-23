@@ -15,9 +15,11 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="min-h-screen flex flex-col font-Inter">
+  <div class="w-full min-h-screen flex flex-col font-Inter">
     <Navbar />
-    <RouterView />
+    <main class="flex-1">
+      <RouterView />
+    </main>
     <FooterArea />
   </div>
 </template>

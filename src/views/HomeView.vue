@@ -88,17 +88,19 @@ const calendarMonth = computed(() => {
 })
 
 const events = computed(() => eventsStore.eventData)
+const eventModal = computed(() => eventsStore.eventModal)
 const currentEventArray = computed(() => eventsStore.currentEventArray)
+
 onMounted(() => {
   setToday()
 })
 </script>
 <template>
-  <div class="min-h-screen">
+  <div class="h-full flex flex-col">
     <h2 class="text-3xl text-center mb-5">
       {{ calendar.year }}-{{ calendar.month + 1 }}-{{ calendar.date }}
     </h2>
-    <div class="flex items-center justify-center gap-5">
+    <div class="flex items-center justify-center gap-5 flex-wrap">
       <button @click="adjustYear(-1)" class="btn btn-sm btn-outline">Last Year</button>
       <button @click="adjustMonth(-1)" class="btn btn-sm btn-outline">Last Month</button>
       <button @click="setToday()" class="btn btn-sm btn-outline">Today</button>
@@ -107,7 +109,7 @@ onMounted(() => {
     </div>
     <div class="relative w-full p-5">
       <div
-        class="flex justify-center items-center text-center text-lg bg-[#10b981] text-white font-medium rounded-tl-lg rounded-tr-lg"
+        class="flex justify-center items-center text-center text-sm sm:text-lg bg-[#10b981] text-white font-medium rounded-tl-lg rounded-tr-lg"
       >
         <div class="flex-1 p-2">Sun</div>
         <div class="flex-1 p-2">Mon</div>
@@ -157,11 +159,14 @@ onMounted(() => {
           </div>
         </div>
       </div>
+      <button
+        @click="toggleModal"
+        class="btn bg-[hsl(160,84%,39%)] hover:bg-[#7dddbd] border-none absolute bottom-10 right-[5%] w-12 h-12 text-white flex items-center rounded-full shadow-[0_5px_10px_1px_rgba(100,100,111,0.3)]"
+      >
+        <i class="fa-solid fa-plus"></i>
+      </button>
     </div>
-    <div class="flex justify-center p-5">
-      <button @click="toggleModal" class="btn btn-neutral bg-black text-white">New Event</button>
-    </div>
-    <EventModal :currentevent="currentEvent" />
+    <EventModal v-if="eventModal" :currentevent="currentEvent" />
   </div>
 </template>
 <style scoped>
