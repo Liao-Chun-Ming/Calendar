@@ -138,11 +138,11 @@ watch(
             <button
               v-if="!editEvent"
               type="submit"
-              class="btn btn-neutral bg-black text-white flex-1"
+              class="btn bg-[#10b981] hover:bg-[#7dddbd] border-none text-white flex-1"
             >
               Create Event
             </button>
-            <button v-if="editEvent" type="submit" class="btn btn-accent text-white flex-1">
+            <button v-if="editEvent" type="submit" class="btn btn-warning text-white flex-1">
               Update Event
             </button>
           </div>

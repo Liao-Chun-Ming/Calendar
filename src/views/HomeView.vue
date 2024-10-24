@@ -96,7 +96,7 @@ onMounted(() => {
 })
 </script>
 <template>
-  <div class="h-full flex flex-col">
+  <div class="relative h-full flex flex-col">
     <h2 class="text-3xl text-center mb-5">
       {{ calendar.year }}-{{ calendar.month + 1 }}-{{ calendar.date }}
     </h2>
@@ -152,7 +152,7 @@ onMounted(() => {
                   index
                 )
               "
-              class="bg-[rgba(255,145,0,0.1)] text-[#ff8f00] text-xs rounded-sm px-2 py-0.5 cursor-pointer truncate"
+              class="bg-[rgba(255,145,0,0.1)] text-[#ff8f00] text-xs rounded-sm border-l-2 border-[#ff8f00] px-2 py-0.5 cursor-pointer truncate"
             >
               <span>{{ event.content }}</span>
             </div>
@@ -166,7 +166,9 @@ onMounted(() => {
         <i class="fa-solid fa-plus"></i>
       </button>
     </div>
-    <EventModal v-if="eventModal" :currentevent="currentEvent" />
+    <transition name="event-modal">
+      <EventModal v-if="eventModal" :currentevent="currentEvent" />
+    </transition>
   </div>
 </template>
 <style scoped>
@@ -187,5 +189,18 @@ onMounted(() => {
 .other {
   background-color: #f8f8f8;
   color: #a9a9a9;
+}
+.event-modal-enter-active,
+.event-modal-leave-active {
+  transition: opacity 0.7s ease;
+}
+
+.event-modal-enter-from,
+.event-modal-leave-to {
+  opacity: 0;
+}
+.event-modal-enter-to,
+.event-modal-leave-from {
+  opacity: 1;
 }
 </style>
