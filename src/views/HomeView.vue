@@ -112,13 +112,13 @@ onMounted(() => {
       <div
         class="flex justify-center items-center text-center text-sm sm:text-lg bg-[#10b981] text-white font-medium rounded-tl-lg rounded-tr-lg"
       >
-        <div class="flex-1 p-2">Sun</div>
-        <div class="flex-1 p-2">Mon</div>
-        <div class="flex-1 p-2">Tue</div>
-        <div class="flex-1 p-2">Wed</div>
-        <div class="flex-1 p-2">Thur</div>
-        <div class="flex-1 p-2">Fri</div>
-        <div class="flex-1 p-2">Sat</div>
+        <div class="flex-1 px-1 py-2 sm:p-2">Sun.</div>
+        <div class="flex-1 px-1 py-2 sm:p-2">Mon.</div>
+        <div class="flex-1 px-1 py-2 sm:p-2">Tues.</div>
+        <div class="flex-1 px-1 py-2 sm:p-2">Wed.</div>
+        <div class="flex-1 px-1 py-2 sm:p-2">Thurs.</div>
+        <div class="flex-1 px-1 py-2 sm:p-2">Fri.</div>
+        <div class="flex-1 px-1 py-2 sm:p-2">Sat.</div>
       </div>
       <div v-for="i in 6" :key="i" class="flex border-b border-r border-blue-300">
         <div
