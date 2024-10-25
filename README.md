@@ -38,11 +38,12 @@ npm run lint
 - Vue + Vite as a development framework.
 - TailWind:The CSS framework to use it.
 - LottieFile: The Great designs come alive with motion!
-- Firebase:use for store data.
+- Firebase:NoSQL DataBase for store data.
 
 #### Demo
+https://github.com/user-attachments/assets/70a0f426-3d88-4e4a-8552-dc3af16a9a36
 
-https://github.com/user-attachments/assets/1cb59cd4-deff-48d1-b02c-eb5ff8aafbb7
+
 
 
 
