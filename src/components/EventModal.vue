@@ -15,6 +15,7 @@ const props = defineProps({
 
 const selectedDate = ref(null)
 const eventContent = ref(null)
+const eventCategory = ref(null)
 const loading = ref(null)
 const eventsStore = useEventStore()
 
@@ -28,10 +29,11 @@ const closeEvent = () => {
   }
   selectedDate.value = null
   eventContent.value = null
+  eventCategory.value = null
 }
 
 const saveEvent = async () => {
-  if (!selectedDate.value || !eventContent.value) {
+  if (!selectedDate.value || !eventContent.value || !eventCategory.value) {
     alert('Please ensure you filled out')
     return
   }
@@ -40,6 +42,7 @@ const saveEvent = async () => {
   const eventDate = selectedDate.value
   const eventData = {
     id: uid(),
+    category: eventCategory.value,
     content: eventContent.value
   }
 
@@ -54,6 +57,7 @@ const saveEvent = async () => {
     const existingData = docSnap.data()
     if (editEvent.value && props?.currentevent.currentDate === eventDate) {
       existingData.eventContentList[props.currentevent.currentIndex].content = eventData.content
+      existingData.eventContentList[props.currentevent.currentIndex].category = eventData.category
     } else {
       existingData.eventContentList.push(eventData)
     }
@@ -90,9 +94,11 @@ watch(
     if (newEditEvent && newCurrentEvent) {
       selectedDate.value = newCurrentEvent.currentDate || null
       eventContent.value = newCurrentEvent.currentContent || null
+      eventCategory.value = newCurrentEvent.currentCategory || null
     } else {
       selectedDate.value = null
       eventContent.value = null
+      eventCategory.value = null
     }
   },
   { immediate: true, deep: true }
@@ -103,7 +109,7 @@ watch(
   <div class="flex justify-center p-5">
     <div class="w-full h-full fixed inset-0 bg-black bg-opacity-50"></div>
     <div
-      class="absolute left-1/2 top-[30%] -translate-x-1/2 min-w-[336px] sm:min-w-96 bg-white flex flex-col items-center justify-between gap-5 shadow-lg rounded-lg py-5"
+      class="absolute left-1/2 top-[20%] -translate-x-1/2 min-w-[336px] sm:min-w-96 bg-white flex flex-col items-center justify-between gap-5 shadow-lg rounded-lg py-5"
     >
       <Loading v-show="loading" />
       <div class="w-4/5 flex flex-col gap-5 z-10">
@@ -119,10 +125,17 @@ watch(
           </button>
         </div>
         <form @submit.prevent="submitForm" class="flex flex-col gap-4">
-          <div>
+          <div class="flex flex-col gap-2">
             <div>
               <label for="formdate">Date:</label>
               <input v-model="selectedDate" type="date" id="formdate" class="w-full rounded-lg" />
+            </div>
+            <div>
+              <label for="formCategory">Category:</label>
+              <select v-model="eventCategory" id="formCategory" class="w-full rounded-lg">
+                <option value="personal">Personal</option>
+                <option value="work">Work</option>
+              </select>
             </div>
             <div class="flex flex-col justify-center items-center">
               <label for="textcontent" class="self-start">Events:</label>
@@ -145,16 +158,16 @@ watch(
             <button v-if="editEvent" type="submit" class="btn btn-warning text-white flex-1">
               Update Event
             </button>
+            <button
+              v-if="editEvent"
+              type="button"
+              @click="deleteEvent(selectedDate, currentevent.index)"
+              class="btn btn-error text-white flex-1"
+            >
+              Delete
+            </button>
           </div>
         </form>
-        <button
-          v-if="editEvent"
-          type="button"
-          @click="deleteEvent(selectedDate, currentevent.index)"
-          class="btn btn-error text-white flex-1"
-        >
-          Delete
-        </button>
       </div>
     </div>
   </div>

@@ -46,7 +46,8 @@ const toggleEditEvent = (date, index) => {
   currentEvent.value = {
     currentIndex: index,
     currentDate: currentEventArray.value[0]?.eventDate || '',
-    currentContent: currentEventArray.value[0]?.eventContentList[index]?.content || ''
+    currentContent: currentEventArray.value[0]?.eventContentList[index]?.content || '',
+    currentCategory: currentEventArray.value[0]?.eventContentList[index]?.category || ''
   }
 }
 
@@ -152,7 +153,13 @@ onMounted(() => {
                   index
                 )
               "
-              class="bg-[rgba(255,145,0,0.1)] text-[#ff8f00] text-xs rounded-sm border-l-2 border-[#ff8f00] px-2 py-0.5 cursor-pointer truncate"
+              class="text-xs rounded-sm border-l-2 px-2 py-0.5 cursor-pointer truncate"
+              :class="{
+                'bg-[rgba(255,145,0,0.1)] text-[#ff8f00] border-[#ff8f00]':
+                  event.category === 'personal',
+                'bg-[rgba(0,102,255,0.1)] text-[#0066ff] border-[#0066ff]':
+                  event.category === 'work'
+              }"
             >
               <span>{{ event.content }}</span>
             </div>
@@ -192,7 +199,7 @@ onMounted(() => {
 }
 .event-modal-enter-active,
 .event-modal-leave-active {
-  transition: opacity 0.7s ease;
+  transition: opacity 0.5s ease;
 }
 
 .event-modal-enter-from,
