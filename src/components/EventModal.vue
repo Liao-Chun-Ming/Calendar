@@ -161,7 +161,7 @@ watch(
             <button
               v-if="editEvent"
               type="button"
-              @click="deleteEvent(selectedDate, currentevent.index)"
+              @click="deleteEvent(selectedDate, currentevent.currentIndex)"
               class="btn btn-error text-white flex-1"
             >
               Delete
