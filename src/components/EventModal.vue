@@ -1,10 +1,13 @@
 <script setup>
-import db from '@/firebase/firebaseInit'
 import Loading from '@/components/LoadingAnimation.vue'
-import { collection, doc, setDoc, getDoc, updateDoc } from 'firebase/firestore'
 import { ref, computed, watch } from 'vue'
 import { useEventStore } from '@/stores/index.js'
 import { uid } from 'uid'
+import {
+  fetchEventByDate,
+  saveEventToFirebase,
+  updateEventInFirebase
+} from '@/firebase/eventService.js'
 
 const props = defineProps({
   currentevent: {
@@ -13,10 +16,10 @@ const props = defineProps({
   }
 })
 
-const selectedDate = ref(null)
-const eventContent = ref(null)
-const eventCategory = ref(null)
-const loading = ref(null)
+const selectedDate = ref('')
+const eventContent = ref('')
+const eventCategory = ref('')
+const loading = ref(false)
 const eventsStore = useEventStore()
 
 const toggleModal = () => {
@@ -27,9 +30,13 @@ const closeEvent = () => {
   if (editEvent.value) {
     eventsStore.toggleEditEvent()
   }
-  selectedDate.value = null
-  eventContent.value = null
-  eventCategory.value = null
+  resetForm()
+}
+
+const resetForm = () => {
+  selectedDate.value = ''
+  eventContent.value = ''
+  eventCategory.value = ''
 }
 
 const saveEvent = async () => {
@@ -46,32 +53,35 @@ const saveEvent = async () => {
     content: eventContent.value
   }
 
-  const dataBase = doc(collection(db, 'events'), eventDate)
-  const docSnap = await getDoc(dataBase)
-
-  if (editEvent.value && props?.currentevent.currentDate !== eventDate) {
-    await eventsStore.deleteEvent(props.currentevent.currentDate, props.currentevent.currentIndex)
-  }
-
-  if (docSnap.exists()) {
-    const existingData = docSnap.data()
-    if (editEvent.value && props?.currentevent.currentDate === eventDate) {
-      existingData.eventContentList[props.currentevent.currentIndex].content = eventData.content
-      existingData.eventContentList[props.currentevent.currentIndex].category = eventData.category
-    } else {
-      existingData.eventContentList.push(eventData)
+  try {
+    if (editEvent.value && props.currentevent.currentDate !== eventDate) {
+      await eventsStore.deleteEvent(props.currentevent.currentDate, props.currentevent.currentIndex)
     }
-    await updateDoc(dataBase, existingData)
-  } else {
-    await setDoc(dataBase, {
-      eventId: uid(6),
-      eventDate: selectedDate.value,
-      eventContentList: [eventData]
-    })
+    const existingEvent = await fetchEventByDate(eventDate)
+
+    if (existingEvent) {
+      if (editEvent.value && props.currentevent.currentDate === eventDate) {
+        existingEvent.eventContentList[props.currentevent.currentIndex].content = eventData.content
+        existingEvent.eventContentList[props.currentevent.currentIndex].category =
+          eventData.category
+      } else {
+        existingEvent.eventContentList.push(eventData)
+      }
+      await updateEventInFirebase(eventDate, existingEvent.eventContentList)
+    } else {
+      await saveEventToFirebase(eventDate, {
+        eventId: uid(6),
+        eventDate,
+        eventContentList: [eventData]
+      })
+    }
+    await eventsStore.getEvents()
+    closeEvent()
+  } catch (error) {
+    console.error('Error saving event:', error)
+  } finally {
+    loading.value = false
   }
-  loading.value = false
-  await eventsStore.getEvents()
-  closeEvent()
 }
 
 const deleteEvent = async (date, index) => {

@@ -15,7 +15,7 @@ const calendar = reactive({
   day: 0
 })
 
-const currentEvent = ref(null)
+const currentEvent = ref({})
 const eventsStore = useEventStore()
 
 const setToday = () => {
@@ -45,9 +45,9 @@ const toggleEditEvent = (date, index) => {
 
   currentEvent.value = {
     currentIndex: index,
-    currentDate: currentEventArray.value[0]?.eventDate || '',
-    currentContent: currentEventArray.value[0]?.eventContentList[index]?.content || '',
-    currentCategory: currentEventArray.value[0]?.eventContentList[index]?.category || ''
+    currentDate: currentEventArray.value[0].eventDate || '',
+    currentContent: currentEventArray.value[0].eventContentList[index].content || '',
+    currentCategory: currentEventArray.value[0].eventContentList[index].category || ''
   }
 }
 
@@ -55,7 +55,7 @@ const getCurrentEvent = (date) => {
   eventsStore.setCurrentEvent(date)
 }
 
-const filteredDate = (date) => events.value.filter((event) => event.eventDate === date)
+const filteredDate = (date) => eventData.value.filter((event) => event.eventDate === date)
 
 const calendarFirstDay = computed(() => {
   const mDate = new Date(calendar.year, calendar.month, 1)
@@ -72,7 +72,6 @@ const calendarMonth = computed(() => {
   const data = []
   let date
   for (let i = 0; i < 42; i++) {
-    //日期超過會自動進到下一個月
     date = new Date(
       calendarFirstDay.value.year,
       calendarFirstDay.value.month,
@@ -88,7 +87,7 @@ const calendarMonth = computed(() => {
   return data
 })
 
-const events = computed(() => eventsStore.eventData)
+const eventData = computed(() => eventsStore.eventData)
 const eventModal = computed(() => eventsStore.eventModal)
 const currentEventArray = computed(() => eventsStore.currentEventArray)
 
@@ -168,6 +167,7 @@ onMounted(() => {
       </div>
       <button
         @click="toggleModal"
+        type="button"
         class="btn bg-[hsl(160,84%,39%)] hover:bg-[#7dddbd] border-none absolute bottom-10 right-[5%] w-12 h-12 text-white flex items-center rounded-full shadow-[0_5px_10px_1px_rgba(100,100,111,0.3)]"
       >
         <i class="fa-solid fa-plus"></i>

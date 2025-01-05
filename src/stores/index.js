@@ -1,11 +1,14 @@
 import { defineStore } from 'pinia'
-import db from '@/firebase/firebaseInit'
-import { collection, doc, getDocs, updateDoc, deleteDoc } from 'firebase/firestore'
+import {
+  fetchEventsFromFirebase,
+  updateEventInFirebase,
+  deleteEventFromFirebase
+} from '@/firebase/eventService'
 export const useEventStore = defineStore('eventStore', {
   state: () => ({
     eventData: [],
-    eventModal: null,
-    editEvent: null,
+    eventModal: false,
+    editEvent: false,
     currentEventArray: null
   }),
   actions: {
@@ -23,36 +26,27 @@ export const useEventStore = defineStore('eventStore', {
     },
 
     async getEvents() {
-      const getData = collection(db, 'events')
-      const results = await getDocs(getData)
-      results.forEach((doc) => {
-        const existingEventIndex = this.eventData.findIndex((event) => event.docId === doc.id)
+      const events = await fetchEventsFromFirebase()
+      events.forEach((event) => {
+        const existingEventIndex = this.eventData.findIndex((e) => e.docId === event.docId)
         if (existingEventIndex === -1) {
-          const data = {
-            docId: doc.id,
-            eventId: doc.data().eventId,
-            eventDate: doc.data().eventDate,
-            eventContentList: doc.data().eventContentList
-          }
-          this.setEventData(data)
+          this.setEventData(event)
         } else {
-          this.eventData[existingEventIndex].eventContentList = doc.data().eventContentList
+          this.eventData[existingEventIndex].eventContentList = event.eventContentList
         }
       })
     },
 
     async deleteEvent(date, index) {
-      const dataBase = doc(collection(db, 'events'), date)
       const eventData = this.eventData.find((event) => event.docId === date)
       const updatedContentList = [...eventData.eventContentList]
       updatedContentList.splice(index, 1)
+
       if (updatedContentList.length === 0) {
-        await deleteDoc(dataBase)
+        await deleteEventFromFirebase(date)
         this.eventData = this.eventData.filter((event) => event.docId !== date)
       } else {
-        await updateDoc(dataBase, {
-          eventContentList: updatedContentList
-        })
+        await updateEventInFirebase(date, updatedContentList)
       }
     }
   }

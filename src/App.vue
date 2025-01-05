@@ -3,7 +3,6 @@ import { onMounted } from 'vue'
 import { RouterView } from 'vue-router'
 import { useEventStore } from '@/stores/index.js'
 import Navbar from '@/components/NavBar.vue'
-
 import FooterArea from '@/components/FooterArea.vue'
 
 const eventsStore = useEventStore()
