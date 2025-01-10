@@ -1,118 +1,121 @@
 <script setup>
-import Loading from '@/components/LoadingAnimation.vue'
-import { ref, computed, watch } from 'vue'
-import { useEventStore } from '@/stores/index.js'
-import { uid } from 'uid'
+import Loading from '@/components/LoadingAnimation.vue';
+import { ref, computed, watch } from 'vue';
+import { useEventStore } from '@/stores/index.js';
+import { uid } from 'uid';
 import {
   fetchEventByDate,
   saveEventToFirebase,
   updateEventInFirebase
-} from '@/firebase/eventService.js'
+} from '@/firebase/eventApi.js';
 
 const props = defineProps({
   currentevent: {
     type: Object,
     default: () => ({})
   }
-})
+});
 
-const selectedDate = ref('')
-const eventContent = ref('')
-const eventCategory = ref('')
-const loading = ref(false)
-const eventsStore = useEventStore()
+const selectedDate = ref('');
+const eventContent = ref('');
+const eventCategory = ref('');
+const loading = ref(false);
+const eventsStore = useEventStore();
 
 const toggleModal = () => {
-  eventsStore.toggleEvent()
-}
+  eventsStore.toggleEvent();
+};
 const closeEvent = () => {
-  toggleModal()
+  toggleModal();
   if (editEvent.value) {
-    eventsStore.toggleEditEvent()
+    eventsStore.toggleEditEvent();
   }
-  resetForm()
-}
+  resetForm();
+};
 
 const resetForm = () => {
-  selectedDate.value = ''
-  eventContent.value = ''
-  eventCategory.value = ''
-}
+  selectedDate.value = '';
+  eventContent.value = '';
+  eventCategory.value = '';
+};
 
 const saveEvent = async () => {
   if (!selectedDate.value || !eventContent.value || !eventCategory.value) {
-    alert('Please ensure you filled out')
-    return
+    alert('Please ensure you filled out');
+    return;
   }
 
-  loading.value = true
-  const eventDate = selectedDate.value
+  loading.value = true;
+  const eventDate = selectedDate.value;
   const eventData = {
     id: uid(),
     category: eventCategory.value,
     content: eventContent.value
-  }
+  };
 
   try {
     if (editEvent.value && props.currentevent.currentDate !== eventDate) {
-      await eventsStore.deleteEvent(props.currentevent.currentDate, props.currentevent.currentIndex)
+      await eventsStore.deleteEvent(
+        props.currentevent.currentDate,
+        props.currentevent.currentIndex
+      );
     }
-    const existingEvent = await fetchEventByDate(eventDate)
+    const existingEvent = await fetchEventByDate(eventDate);
 
     if (existingEvent) {
       if (editEvent.value && props.currentevent.currentDate === eventDate) {
-        existingEvent.eventContentList[props.currentevent.currentIndex].content = eventData.content
+        existingEvent.eventContentList[props.currentevent.currentIndex].content = eventData.content;
         existingEvent.eventContentList[props.currentevent.currentIndex].category =
-          eventData.category
+          eventData.category;
       } else {
-        existingEvent.eventContentList.push(eventData)
+        existingEvent.eventContentList.push(eventData);
       }
-      await updateEventInFirebase(eventDate, existingEvent.eventContentList)
+      await updateEventInFirebase(eventDate, existingEvent.eventContentList);
     } else {
       await saveEventToFirebase(eventDate, {
         eventId: uid(6),
         eventDate,
         eventContentList: [eventData]
-      })
+      });
     }
-    await eventsStore.getEvents()
-    closeEvent()
+    await eventsStore.getEvents();
+    closeEvent();
   } catch (error) {
-    console.error('Error saving event:', error)
+    console.error('Error saving event:', error);
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-}
+};
 
 const deleteEvent = async (date, index) => {
-  loading.value = true
-  await eventsStore.deleteEvent(date, index)
-  await eventsStore.getEvents()
-  loading.value = false
-  closeEvent()
-}
+  loading.value = true;
+  await eventsStore.deleteEvent(date, index);
+  await eventsStore.getEvents();
+  loading.value = false;
+  closeEvent();
+};
 
 const submitForm = () => {
-  saveEvent()
-}
+  saveEvent();
+};
 
-const editEvent = computed(() => eventsStore.editEvent)
+const editEvent = computed(() => eventsStore.editEvent);
 
 watch(
   [() => props.currentevent, editEvent],
   ([newCurrentEvent, newEditEvent]) => {
     if (newEditEvent && newCurrentEvent) {
-      selectedDate.value = newCurrentEvent.currentDate || null
-      eventContent.value = newCurrentEvent.currentContent || null
-      eventCategory.value = newCurrentEvent.currentCategory || null
+      selectedDate.value = newCurrentEvent.currentDate || null;
+      eventContent.value = newCurrentEvent.currentContent || null;
+      eventCategory.value = newCurrentEvent.currentCategory || null;
     } else {
-      selectedDate.value = null
-      eventContent.value = null
-      eventCategory.value = null
+      selectedDate.value = null;
+      eventContent.value = null;
+      eventCategory.value = null;
     }
   },
   { immediate: true, deep: true }
-)
+);
 </script>
 
 <template>

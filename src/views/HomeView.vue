@@ -1,99 +1,99 @@
 <script setup>
-import { ref, reactive, onMounted, computed } from 'vue'
-import { useEventStore } from '@/stores/index.js'
-import EventModal from '@/components/EventModal.vue'
+import { ref, reactive, onMounted, computed } from 'vue';
+import { useEventStore } from '@/stores/index.js';
+import EventModal from '@/components/EventModal.vue';
 const today = reactive({
   year: 0,
   month: 0,
   date: 0,
   day: 0
-})
+});
 const calendar = reactive({
   year: 0,
   month: 0,
   date: 0,
   day: 0
-})
+});
 
-const currentEvent = ref({})
-const eventsStore = useEventStore()
+const currentEvent = ref({});
+const eventsStore = useEventStore();
 
 const setToday = () => {
-  const date = new Date()
-  today.year = calendar.year = date.getFullYear()
-  today.month = calendar.month = date.getMonth()
-  today.date = calendar.date = date.getDate()
-  today.day = calendar.day = date.getDay()
-}
+  const date = new Date();
+  today.year = calendar.year = date.getFullYear();
+  today.month = calendar.month = date.getMonth();
+  today.date = calendar.date = date.getDate();
+  today.day = calendar.day = date.getDay();
+};
 const adjustYear = (fix) => {
-  calendar.year += fix
-}
+  calendar.year += fix;
+};
 const adjustMonth = (fix) => {
-  let month = calendar.month + fix
-  calendar.year += Math.floor(month / 12)
-  calendar.month = ((month % 12) + 12) % 12
-}
+  let month = calendar.month + fix;
+  calendar.year += Math.floor(month / 12);
+  calendar.month = ((month % 12) + 12) % 12;
+};
 
 const toggleModal = () => {
-  eventsStore.toggleEvent()
-}
+  eventsStore.toggleEvent();
+};
 
 const toggleEditEvent = (date, index) => {
-  eventsStore.toggleEditEvent()
-  toggleModal()
-  getCurrentEvent(date)
+  eventsStore.toggleEditEvent();
+  toggleModal();
+  getCurrentEvent(date);
 
   currentEvent.value = {
     currentIndex: index,
     currentDate: currentEventArray.value[0].eventDate || '',
     currentContent: currentEventArray.value[0].eventContentList[index].content || '',
     currentCategory: currentEventArray.value[0].eventContentList[index].category || ''
-  }
-}
+  };
+};
 
 const getCurrentEvent = (date) => {
-  eventsStore.setCurrentEvent(date)
-}
+  eventsStore.setCurrentEvent(date);
+};
 
-const filteredDate = (date) => eventData.value.filter((event) => event.eventDate === date)
+const filteredDate = (date) => eventData.value.filter((event) => event.eventDate === date);
 
 const calendarFirstDay = computed(() => {
-  const mDate = new Date(calendar.year, calendar.month, 1)
-  const date = new Date(calendar.year, calendar.month, 1 - mDate.getDay())
+  const mDate = new Date(calendar.year, calendar.month, 1);
+  const date = new Date(calendar.year, calendar.month, 1 - mDate.getDay());
   return {
     year: date.getFullYear(),
     month: date.getMonth(),
     date: date.getDate(),
     day: date.getDay()
-  }
-})
+  };
+});
 
 const calendarMonth = computed(() => {
-  const data = []
-  let date
+  const data = [];
+  let date;
   for (let i = 0; i < 42; i++) {
     date = new Date(
       calendarFirstDay.value.year,
       calendarFirstDay.value.month,
       calendarFirstDay.value.date + i
-    )
+    );
     data.push({
       year: date.getFullYear(),
       month: date.getMonth(),
       date: date.getDate(),
       day: date.getDay()
-    })
+    });
   }
-  return data
-})
+  return data;
+});
 
-const eventData = computed(() => eventsStore.eventData)
-const eventModal = computed(() => eventsStore.eventModal)
-const currentEventArray = computed(() => eventsStore.currentEventArray)
+const eventData = computed(() => eventsStore.eventData);
+const eventModal = computed(() => eventsStore.eventModal);
+const currentEventArray = computed(() => eventsStore.currentEventArray);
 
 onMounted(() => {
-  setToday()
-})
+  setToday();
+});
 </script>
 <template>
   <div class="relative h-full flex flex-col">

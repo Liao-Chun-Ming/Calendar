@@ -1,15 +1,15 @@
 <script setup>
-import { ref, onMounted } from 'vue'
-const year = ref('')
+import { ref, onMounted } from 'vue';
+const year = ref('');
 
 const getYear = () => {
-  const now = new Date()
-  year.value = now.getFullYear()
-}
+  const now = new Date();
+  year.value = now.getFullYear();
+};
 
 onMounted(() => {
-  getYear()
-})
+  getYear();
+});
 </script>
 <template>
   <footer class="bg-black h-10 flex items-center justify-center">

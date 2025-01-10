@@ -1,8 +1,8 @@
 <script setup>
-import { ref, onMounted } from 'vue'
-import lottie from 'lottie-web'
+import { ref, onMounted } from 'vue';
+import lottie from 'lottie-web';
 
-const iconRef = ref(null)
+const iconRef = ref(null);
 const loadAnimation = (iconRef) => {
   lottie.loadAnimation({
     container: iconRef.value,
@@ -10,12 +10,12 @@ const loadAnimation = (iconRef) => {
     loop: true,
     autoplay: true,
     path: 'calendar.json'
-  })
-}
+  });
+};
 
 onMounted(() => {
-  loadAnimation(iconRef)
-})
+  loadAnimation(iconRef);
+});
 </script>
 <template>
   <nav>
