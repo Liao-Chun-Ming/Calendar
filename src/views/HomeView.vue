@@ -1,7 +1,16 @@
 <script setup>
 import { ref, reactive, onMounted, computed } from 'vue';
-import { useEventStore } from '@/stores/index.js';
+import { uid } from 'uid';
 import EventModal from '@/components/EventModal.vue';
+import Loading from '@/components/LoadingAnimation.vue';
+import {
+  getEvents,
+  getEventByDate,
+  updateEvent,
+  createEvent,
+  deleteEvent
+} from '@/firebase/eventApi';
+
 const today = reactive({
   year: 0,
   month: 0,
@@ -14,48 +23,17 @@ const calendar = reactive({
   date: 0,
   day: 0
 });
-
-const currentEvent = ref({});
-const eventsStore = useEventStore();
-
-const setToday = () => {
-  const date = new Date();
-  today.year = calendar.year = date.getFullYear();
-  today.month = calendar.month = date.getMonth();
-  today.date = calendar.date = date.getDate();
-  today.day = calendar.day = date.getDay();
-};
-const adjustYear = (fix) => {
-  calendar.year += fix;
-};
-const adjustMonth = (fix) => {
-  let month = calendar.month + fix;
-  calendar.year += Math.floor(month / 12);
-  calendar.month = ((month % 12) + 12) % 12;
-};
-
-const toggleModal = () => {
-  eventsStore.toggleEvent();
-};
-
-const toggleEditEvent = (date, index) => {
-  eventsStore.toggleEditEvent();
-  toggleModal();
-  getCurrentEvent(date);
-
-  currentEvent.value = {
-    currentIndex: index,
-    currentDate: currentEventArray.value[0].eventDate || '',
-    currentContent: currentEventArray.value[0].eventContentList[index].content || '',
-    currentCategory: currentEventArray.value[0].eventContentList[index].category || ''
-  };
-};
-
-const getCurrentEvent = (date) => {
-  eventsStore.setCurrentEvent(date);
-};
-
-const filteredDate = (date) => eventData.value.filter((event) => event.eventDate === date);
+const loading = ref(false);
+const showModal = ref(false);
+const isEdit = ref(false);
+const eventData = ref([]);
+const formData = reactive({
+  id: '',
+  selectDate: '',
+  eventDate: '',
+  category: '',
+  content: ''
+});
 
 const calendarFirstDay = computed(() => {
   const mDate = new Date(calendar.year, calendar.month, 1);
@@ -67,7 +45,6 @@ const calendarFirstDay = computed(() => {
     day: date.getDay()
   };
 });
-
 const calendarMonth = computed(() => {
   const data = [];
   let date;
@@ -87,13 +64,135 @@ const calendarMonth = computed(() => {
   return data;
 });
 
-const eventData = computed(() => eventsStore.eventData);
-const eventModal = computed(() => eventsStore.eventModal);
-const currentEventArray = computed(() => eventsStore.currentEventArray);
-
 onMounted(() => {
   setToday();
+  getEventData();
 });
+
+function setToday() {
+  const date = new Date();
+  today.year = calendar.year = date.getFullYear();
+  today.month = calendar.month = date.getMonth();
+  today.date = calendar.date = date.getDate();
+  today.day = calendar.day = date.getDay();
+}
+
+function adjustYear(fix) {
+  calendar.year += fix;
+}
+
+function adjustMonth(fix) {
+  let month = calendar.month + fix;
+  calendar.year += Math.floor(month / 12);
+  calendar.month = ((month % 12) + 12) % 12;
+}
+
+async function getEventData() {
+  eventData.value = await getEvents();
+}
+
+function toggleModal() {
+  formData.id = '';
+  formData.selectDate = '';
+  formData.eventDate = '';
+  formData.category = '';
+  formData.content = '';
+
+  showModal.value = true;
+}
+
+function toggleEditEvent(date, index) {
+  showModal.value = true;
+  isEdit.value = true;
+
+  const data = filteredDate(date)[0];
+
+  formData.id = data.eventContentList[index].id;
+  formData.selectDate = data.eventDate;
+  formData.eventDate = data.eventDate;
+  formData.category = data.eventContentList[index].category;
+  formData.content = data.eventContentList[index].content;
+}
+
+function filteredDate(date) {
+  return eventData.value.filter((event) => event.eventDate === date);
+}
+
+async function deleteSingleEvent(date) {
+  const data = eventData.value.find((event) => event.docId === date);
+  const updateContentList = data.eventContentList.filter((item) => item.id !== formData.id);
+
+  if (updateContentList.length === 0) {
+    await deleteEvent(date);
+  } else {
+    await updateEvent(date, updateContentList);
+  }
+}
+
+function closeEvent() {
+  showModal.value = false;
+  isEdit.value = false;
+}
+
+async function saveSubmit() {
+  if (!formData.selectDate || !formData.category || !formData.content) {
+    alert('Please ensure you filled out');
+    return;
+  }
+
+  loading.value = true;
+  const eventDate = formData.selectDate;
+  const eventData = {
+    id: uid(),
+    category: formData.category,
+    content: formData.content
+  };
+
+  try {
+    if (isEdit.value && formData.eventDate !== eventDate) {
+      await deleteSingleEvent(formData.eventDate);
+    }
+
+    const existingEvent = await getEventByDate(eventDate);
+
+    if (existingEvent) {
+      if (isEdit.value && formData.eventDate === eventDate) {
+        const updateEvent = existingEvent.eventContentList.find((item) => item.id === formData.id);
+        updateEvent.category = eventData.category;
+        updateEvent.content = eventData.content;
+      } else {
+        existingEvent.eventContentList.push(eventData);
+      }
+
+      await updateEvent(eventDate, existingEvent.eventContentList);
+    } else {
+      await createEvent(eventDate, {
+        eventId: uid(6),
+        eventDate,
+        eventContentList: [eventData]
+      });
+    }
+
+    await getEventData();
+  } catch (error) {
+    console.error('Error saving event:', error);
+  } finally {
+    loading.value = false;
+    showModal.value = false;
+    isEdit.value = false;
+  }
+}
+
+async function deleteSubmit() {
+  loading.value = true;
+
+  await deleteSingleEvent(formData.eventDate);
+  await getEventData();
+
+  loading.value = false;
+  showModal.value = false;
+  isEdit.value = false;
+}
 </script>
 <template>
   <div class="relative h-full flex flex-col">
@@ -168,16 +267,26 @@ onMounted(() => {
       <button
         @click="toggleModal"
         type="button"
+        aria-label="btn_add"
         class="btn bg-[hsl(160,84%,39%)] hover:bg-[#7dddbd] border-none absolute bottom-10 right-[5%] w-12 h-12 text-white flex items-center rounded-full shadow-[0_5px_10px_1px_rgba(100,100,111,0.3)]"
       >
         <i class="fa-solid fa-plus"></i>
       </button>
     </div>
     <transition name="event-modal">
-      <EventModal v-if="eventModal" :currentevent="currentEvent" />
+      <EventModal
+        v-model:formData="formData"
+        :isOpen="showModal"
+        :isEdit="isEdit"
+        @update:isOpen="closeEvent"
+        @save="saveSubmit"
+        @delete="deleteSubmit"
+      />
     </transition>
   </div>
+  <Loading v-show="loading" />
 </template>
+
 <style scoped>
 .day::before {
   content: attr(data-date);

@@ -3,7 +3,8 @@ import { ref, onMounted } from 'vue';
 import lottie from 'lottie-web';
 
 const iconRef = ref(null);
-const loadAnimation = (iconRef) => {
+
+function loadAnimation(iconRef) {
   lottie.loadAnimation({
     container: iconRef.value,
     renderer: 'svg',
@@ -11,12 +12,13 @@ const loadAnimation = (iconRef) => {
     autoplay: true,
     path: 'calendar.json'
   });
-};
+}
 
 onMounted(() => {
   loadAnimation(iconRef);
 });
 </script>
+
 <template>
   <nav>
     <div class="bg-white flex items-center justify-center flex-col sm:flex-row">
