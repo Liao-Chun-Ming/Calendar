@@ -3,31 +3,31 @@ import { collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc } from '
 
 const eventsCollection = collection(db, 'events');
 
-export const fetchEventsFromFirebase = async () => {
+export async function getEvents() {
   const results = await getDocs(eventsCollection);
   return results.docs.map((doc) => ({
     docId: doc.id,
     ...doc.data()
   }));
-};
+}
 
-export const fetchEventByDate = async (date) => {
+export async function getEventByDate(date) {
   const dataBase = doc(eventsCollection, date);
   const docSnap = await getDoc(dataBase);
   return docSnap.exists() ? docSnap.data() : false;
-};
+}
 
-export const saveEventToFirebase = async (date, data) => {
+export async function createEvent(date, data) {
   const dataBase = doc(eventsCollection, date);
   await setDoc(dataBase, data);
-};
+}
 
-export const updateEventInFirebase = async (date, updatedContentList) => {
+export async function updateEvent(date, updateContentList) {
   const dataBase = doc(eventsCollection, date);
-  await updateDoc(dataBase, { eventContentList: updatedContentList });
-};
+  await updateDoc(dataBase, { eventContentList: updateContentList });
+}
 
-export const deleteEventFromFirebase = async (date) => {
+export async function deleteEvent(date) {
   const dataBase = doc(eventsCollection, date);
   await deleteDoc(dataBase);
-};
+}

@@ -1,151 +1,68 @@
 <script setup>
-import Loading from '@/components/LoadingAnimation.vue';
-import { ref, computed, watch } from 'vue';
-import { useEventStore } from '@/stores/index.js';
-import { uid } from 'uid';
-import {
-  fetchEventByDate,
-  saveEventToFirebase,
-  updateEventInFirebase
-} from '@/firebase/eventApi.js';
+import { computed } from 'vue';
 
 const props = defineProps({
-  currentevent: {
+  formData: {
     type: Object,
     default: () => ({})
+  },
+  isOpen: {
+    type: Boolean,
+    default: false
+  },
+  isEdit: {
+    type: Boolean,
+    default: false
   }
 });
+const emit = defineEmits(['update:isOpen', 'update:formData', 'save', 'delete']);
 
-const selectedDate = ref('');
-const eventContent = ref('');
-const eventCategory = ref('');
-const loading = ref(false);
-const eventsStore = useEventStore();
+const data = computed({
+  get: () => props.formData,
+  set: (newValue) => emit('update:formData', newValue)
+});
 
-const toggleModal = () => {
-  eventsStore.toggleEvent();
-};
-const closeEvent = () => {
-  toggleModal();
-  if (editEvent.value) {
-    eventsStore.toggleEditEvent();
-  }
-  resetForm();
-};
+function handleClose() {
+  emit('update:isOpen', false);
+}
 
-const resetForm = () => {
-  selectedDate.value = '';
-  eventContent.value = '';
-  eventCategory.value = '';
-};
-
-const saveEvent = async () => {
-  if (!selectedDate.value || !eventContent.value || !eventCategory.value) {
-    alert('Please ensure you filled out');
-    return;
-  }
-
-  loading.value = true;
-  const eventDate = selectedDate.value;
-  const eventData = {
-    id: uid(),
-    category: eventCategory.value,
-    content: eventContent.value
-  };
-
-  try {
-    if (editEvent.value && props.currentevent.currentDate !== eventDate) {
-      await eventsStore.deleteEvent(
-        props.currentevent.currentDate,
-        props.currentevent.currentIndex
-      );
-    }
-    const existingEvent = await fetchEventByDate(eventDate);
-
-    if (existingEvent) {
-      if (editEvent.value && props.currentevent.currentDate === eventDate) {
-        existingEvent.eventContentList[props.currentevent.currentIndex].content = eventData.content;
-        existingEvent.eventContentList[props.currentevent.currentIndex].category =
-          eventData.category;
-      } else {
-        existingEvent.eventContentList.push(eventData);
-      }
-      await updateEventInFirebase(eventDate, existingEvent.eventContentList);
-    } else {
-      await saveEventToFirebase(eventDate, {
-        eventId: uid(6),
-        eventDate,
-        eventContentList: [eventData]
-      });
-    }
-    await eventsStore.getEvents();
-    closeEvent();
-  } catch (error) {
-    console.error('Error saving event:', error);
-  } finally {
-    loading.value = false;
-  }
-};
-
-const deleteEvent = async (date, index) => {
-  loading.value = true;
-  await eventsStore.deleteEvent(date, index);
-  await eventsStore.getEvents();
-  loading.value = false;
-  closeEvent();
-};
-
-const submitForm = () => {
-  saveEvent();
-};
-
-const editEvent = computed(() => eventsStore.editEvent);
-
-watch(
-  [() => props.currentevent, editEvent],
-  ([newCurrentEvent, newEditEvent]) => {
-    if (newEditEvent && newCurrentEvent) {
-      selectedDate.value = newCurrentEvent.currentDate || null;
-      eventContent.value = newCurrentEvent.currentContent || null;
-      eventCategory.value = newCurrentEvent.currentCategory || null;
-    } else {
-      selectedDate.value = null;
-      eventContent.value = null;
-      eventCategory.value = null;
-    }
-  },
-  { immediate: true, deep: true }
-);
+function handleAction(action) {
+  emit(action);
+}
 </script>
 
 <template>
-  <div class="flex justify-center p-5">
+  <div v-if="isOpen" class="flex justify-center p-5">
     <div class="w-full h-full fixed inset-0 bg-black bg-opacity-50"></div>
     <div
       class="absolute left-1/2 top-[20%] -translate-x-1/2 min-w-[336px] sm:min-w-96 bg-white flex flex-col items-center justify-between gap-5 shadow-lg rounded-lg py-5"
     >
-      <Loading v-show="loading" />
       <div class="w-4/5 flex flex-col gap-5 z-10">
         <div class="flex justify-between items-center">
           <div class="w-4"></div>
-          <h3 v-if="!editEvent" class="text-xl font-semibold">Add New Event</h3>
+          <h3 v-if="!isEdit" class="text-xl font-semibold">Add New Event</h3>
           <h3 v-else class="text-xl font-semibold">Edit Event</h3>
           <button
-            @click="closeEvent"
+            @click="handleClose"
             class="w-7 h-7 rounded-full hover:bg-[#EFEFEF] active:bg-[#d5d4d4]"
           >
             <i class="fa-solid fa-x"></i>
           </button>
         </div>
-        <form @submit.prevent="submitForm" class="flex flex-col gap-4">
+        <form @submit.prevent="handleAction('save')" class="flex flex-col gap-4">
           <div class="flex flex-col gap-2">
             <div>
               <label for="formdate">Date:</label>
-              <input v-model="selectedDate" type="date" id="formdate" class="w-full rounded-lg" />
+              <input
+                v-model="data.selectDate"
+                type="date"
+                id="formdate"
+                class="w-full rounded-lg"
+              />
             </div>
             <div>
               <label for="formCategory">Category:</label>
-              <select v-model="eventCategory" id="formCategory" class="w-full rounded-lg">
+              <select v-model="data.category" id="formCategory" class="w-full rounded-lg">
                 <option value="personal">Personal</option>
                 <option value="work">Work</option>
               </select>
@@ -153,7 +70,7 @@ watch(
             <div class="flex flex-col justify-center items-center">
               <label for="textcontent" class="self-start">Events:</label>
               <textarea
-                v-model="eventContent"
+                v-model="data.content"
                 name="todo"
                 id="textcontent"
                 class="w-full h-32 rounded-lg"
@@ -162,19 +79,19 @@ watch(
           </div>
           <div class="flex gap-5">
             <button
-              v-if="!editEvent"
+              v-if="!isEdit"
               type="submit"
               class="btn bg-[#10b981] hover:bg-[#7dddbd] border-none text-white flex-1"
             >
               Create Event
             </button>
-            <button v-if="editEvent" type="submit" class="btn btn-warning text-white flex-1">
+            <button v-if="isEdit" type="submit" class="btn btn-warning text-white flex-1">
               Update Event
             </button>
             <button
-              v-if="editEvent"
+              v-if="isEdit"
               type="button"
-              @click="deleteEvent(selectedDate, currentevent.currentIndex)"
+              @click="handleAction('delete')"
               class="btn btn-error text-white flex-1"
             >
               Delete
@@ -185,5 +102,3 @@ watch(
     </div>
   </div>
 </template>
-
-<style scoped></style>
