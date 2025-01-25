@@ -31,7 +31,7 @@ function handleAction(action) {
 
 <template>
   <div v-if="isOpen" class="flex justify-center p-5">
-    <div class="w-full h-full fixed inset-0 bg-black bg-opacity-50"></div>
+    <div class="w-full h-full fixed inset-0 bg-black/50"></div>
     <div
       class="absolute left-1/2 top-[20%] -translate-x-1/2 min-w-[336px] sm:min-w-96 bg-white flex flex-col items-center justify-between gap-5 shadow-lg rounded-lg py-5"
     >
@@ -49,29 +49,36 @@ function handleAction(action) {
         </div>
         <form @submit.prevent="handleAction('save')" class="flex flex-col gap-4">
           <div class="flex flex-col gap-2">
-            <div>
-              <label for="formdate">Date:</label>
+            <div class="flex flex-col justify-center items-center gap-2">
+              <label for="formdate" class="self-start">Date:</label>
               <input
                 v-model="data.selectDate"
                 type="date"
                 id="formdate"
-                class="w-full rounded-lg"
+                class="input w-full rounded-lg"
+                :class="isEdit ? 'input-warning' : 'input-success'"
               />
             </div>
-            <div>
-              <label for="formCategory">Category:</label>
-              <select v-model="data.category" id="formCategory" class="w-full rounded-lg">
+            <div class="flex flex-col justify-center items-center gap-2">
+              <label for="formCategory" class="self-start">Category:</label>
+              <select
+                v-model="data.category"
+                id="formCategory"
+                class="select w-full rounded-lg"
+                :class="isEdit ? 'select-warning' : 'select-success'"
+              >
                 <option value="personal">Personal</option>
                 <option value="work">Work</option>
               </select>
             </div>
-            <div class="flex flex-col justify-center items-center">
+            <div class="flex flex-col justify-center items-center gap-2">
               <label for="textcontent" class="self-start">Events:</label>
               <textarea
                 v-model="data.content"
                 name="todo"
                 id="textcontent"
-                class="w-full h-32 rounded-lg"
+                class="textarea w-full h-32 rounded-lg"
+                :class="isEdit ? 'textarea-warning' : 'textarea-success'"
               ></textarea>
             </div>
           </div>

@@ -200,11 +200,11 @@ async function deleteSubmit() {
       {{ calendar.year }}-{{ calendar.month + 1 }}-{{ calendar.date }}
     </h2>
     <div class="flex items-center justify-center gap-5 flex-wrap">
-      <button @click="adjustYear(-1)" class="btn btn-sm btn-outline">Last Year</button>
-      <button @click="adjustMonth(-1)" class="btn btn-sm btn-outline">Last Month</button>
-      <button @click="setToday()" class="btn btn-sm btn-outline">Today</button>
-      <button @click="adjustMonth(1)" class="btn btn-sm btn-outline">Next Month</button>
-      <button @click="adjustYear(1)" class="btn btn-sm btn-outline">Next Year</button>
+      <button @click="adjustYear(-1)" class="btn btn-soft btn-success btn-sm">Last Year</button>
+      <button @click="adjustMonth(-1)" class="btn btn-soft btn-success btn-sm">Last Month</button>
+      <button @click="setToday()" class="btn btn-soft btn-success btn-sm">Today</button>
+      <button @click="adjustMonth(1)" class="btn btn-soft btn-success btn-sm">Next Month</button>
+      <button @click="adjustYear(1)" class="btn btn-soft btn-success btn-sm">Next Year</button>
     </div>
     <div class="relative w-full p-5">
       <div
@@ -251,7 +251,7 @@ async function deleteSubmit() {
                   index
                 )
               "
-              class="text-xs rounded-sm border-l-2 px-2 py-0.5 cursor-pointer truncate"
+              class="text-xs rounded-xs border-l-2 px-2 py-0.5 cursor-pointer truncate"
               :class="{
                 'bg-[rgba(255,145,0,0.1)] text-[#ff8f00] border-[#ff8f00]':
                   event.category === 'personal',
@@ -298,13 +298,13 @@ async function deleteSubmit() {
   display: block;
 }
 .today::before {
-  background-color: #ff6347;
+  background-color: var(--color-red-64);
   color: white;
-  border: 1px solid #ff6347;
+  border: 1px solid var(--color-red-64);
 }
 .other {
-  background-color: #f8f8f8;
-  color: #a9a9a9;
+  background-color: var(--color-white-97);
+  color: var(--color-gray-66);
 }
 .event-modal-enter-active,
 .event-modal-leave-active {
