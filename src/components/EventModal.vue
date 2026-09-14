@@ -16,7 +16,7 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits(['update:isOpen', 'update:formData', 'save', 'delete']);
+const emit = defineEmits(['update:isOpen', 'save', 'delete']);
 const data = ref(props.formData);
 
 function handleClose() {
@@ -25,7 +25,6 @@ function handleClose() {
 
 function handleAction(action) {
   emit(action);
-  emit('update:formData', data.value);
 }
 </script>
 
