@@ -275,7 +275,7 @@ async function deleteSubmit() {
     </div>
     <transition name="event-modal">
       <EventModal
-        v-model:formData="formData"
+        :formData="formData"
         :isOpen="showModal"
         :isEdit="isEdit"
         @update:isOpen="closeEvent"
